@@ -4,9 +4,13 @@ import dotenv from "dotenv"
 dotenv.config({path : "src/.env"})
 
 import connectDB from "./config/database.js";
-const app: Application = express()
+import authRouter from "./modules/auth/auth.router.js";
+const app = express()
+app.use(express.json());
 
 connectDB();
+
+app.use("/auth", authRouter);
 
 app.listen(3000, () => {
     console.log("Server is running on 3000")
