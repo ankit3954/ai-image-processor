@@ -29,6 +29,27 @@ export const register = async (
     return user.toJSON() as Omit<IUser, "password">;
 }
 
-export const login = async () => {
-    
+export const login = async (
+     data: {
+        email: string,
+        password: string
+    }
+):Promise<Omit<IUser, "password">> => {
+
+    const user = await User.findOne({email: data.email}).select("+password");
+
+    if(!user){
+         throw { status: 401, message: "Invalid Credentials"};
+    }
+
+    if(!user.isActive){
+        throw {status: 403, message: "User is not accessible"};
+    }
+
+    const isPasswordCorrect = await bcyrpt.compare(data.password, user.password);
+    if(!isPasswordCorrect){
+        throw { status: 409, message: "Invalid Credentials"};
+    }
+
+    return user.toJSON() as Omit<IUser, "password">;
 }

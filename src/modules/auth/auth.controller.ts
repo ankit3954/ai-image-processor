@@ -17,3 +17,20 @@ export const register = async (
     next(err);
   }
 }
+
+export const login = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const user = await authService.login(req.body);
+    res.status(201).json({
+      success: true,
+      message: "Logged In Successfully.",
+      data: { user },
+    });
+  } catch (err) {
+    next(err);
+  }
+}

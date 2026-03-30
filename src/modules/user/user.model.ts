@@ -2,7 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 export interface IUser {
     email: string;
-    password?: string;
+    password: string;
     username: string;
     role: "user" | "admin";
     plan: "free" | "starter" | "pro" | "enterprise";
@@ -22,7 +22,8 @@ const UserSchema = new Schema<IUser>({
     },
     password: {
         type: String,
-        required: true
+        required: true,
+        select: false
     },
     username: {
         type: String,
@@ -55,7 +56,6 @@ const UserSchema = new Schema<IUser>({
 UserSchema.methods.toJSON = function () {
     const user = this.toObject();
     delete user.password;
-    delete user.tokenVersion;
     return user;
 }
 
