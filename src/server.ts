@@ -1,7 +1,7 @@
-import express, { type Application } from "express"
-import dotenv from "dotenv"
+import 'dotenv/config'; 
+// dotenv.config()
 
-dotenv.config({path : "src/.env"})
+import express, { type Application } from "express"
 
 import connectDB from "./config/database.js";
 import authRouter from "./modules/auth/auth.router.js";

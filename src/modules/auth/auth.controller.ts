@@ -1,5 +1,6 @@
 import { type NextFunction, type Request, type Response } from "express";
 import * as authService from "./auth.service.js"
+import { refreshTokenCookieOptions } from "../../utils/cookie.utils.js";
 
 export const register = async (
   req: Request,
@@ -24,13 +25,20 @@ export const login = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const user = await authService.login(req.body);
+    const { user, tokens } = await authService.login(req.body);
+
+    res.cookie("refreshToken", tokens.refreshToken, refreshTokenCookieOptions)
+
     res.status(201).json({
       success: true,
       message: "Logged In Successfully.",
-      data: { user },
+      data: {
+        user,
+        accessToken: tokens.accessToken,
+      },
     });
   } catch (err) {
+    console.log(err)
     next(err);
   }
 }

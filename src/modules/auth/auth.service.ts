@@ -1,5 +1,7 @@
+import { generateAccessToken, generateRefreshToken } from "../../token/token.service.js";
 import { User, type IUser } from "../user/user.model.js"
 import bcyrpt from "bcrypt"
+import { RefreshToken } from "./refreshToken.model.js";
 
 export const register = async (
     data: {
@@ -34,7 +36,7 @@ export const login = async (
         email: string,
         password: string
     }
-):Promise<Omit<IUser, "password">> => {
+):Promise<{user: Omit<IUser, "password">; tokens: { accessToken: string, refreshToken: string}}> => {
 
     const user = await User.findOne({email: data.email}).select("+password");
 
@@ -51,5 +53,24 @@ export const login = async (
         throw { status: 409, message: "Invalid Credentials"};
     }
 
-    return user.toJSON() as Omit<IUser, "password">;
+    const accessToken = generateAccessToken({
+        userId: user._id.toString(),
+        role: user.role
+    });
+
+    const {raw, hashed, expiresAt} = generateRefreshToken();
+
+    await RefreshToken.create({
+        userId: user._id,
+        tokenHash: hashed,
+        expiresAt,
+    })
+    
+    return {
+        user: user.toJSON() as Omit<IUser, "password">,
+        tokens: {
+            accessToken,
+            refreshToken: raw
+        }
+    }
 }
