@@ -1,5 +1,3 @@
-// console.log(process.env.JWT_ACCESS_SECRET)
-    console.log(process.env.JWT_ACCESS_SECRET)
 export const jwtConfig = {
     access: {
         secret: process.env.JWT_ACCESS_SECRET as string,

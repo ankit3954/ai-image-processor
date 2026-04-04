@@ -1,18 +1,20 @@
-.env# Environment variables
+# Environments
 .env
-*.env
-src/.env
+.env.*
+!.env.example
 
-# Node modules
+# Dependencies
 node_modules/
 
-# Logs
-*.log
+# Uploads - Keep the folder, ignore the files
+/uploads/*
+!/uploads/.gitkeep
 
-# Build folders
+# Build & Logs
 dist/
 build/
+*.log
 
-# OS files
+# OS Files
 .DS_Store
 Thumbs.db
