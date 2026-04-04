@@ -1,9 +1,10 @@
-import { Router } from "express";
+import { Router, type Request, type Response } from "express";
 import upload from "../../middlewares/upload.middleware.js";
+import { authenticate } from "../../middlewares/authenticate.middleware.js";
 
 const router = Router();
 
-router.post("/uploads", (req, res) => {
+router.post("/uploads", authenticate , (req: Request, res: Response) => {
     upload(req, res, (err) => {
         if (err) {
             console.error(err);
@@ -12,10 +13,13 @@ router.post("/uploads", (req, res) => {
         if (!req.file) {
             return res.status(400).json({ error: 'Please send file' });
         }
-        console.log(req.file);
-        res.send('File uploaded!');
+
+        res.status(201).json({
+            success: true,
+            message: "File Uploaded.",
+            data: {},
+        });
     })
 });
-
 
 export default router;
