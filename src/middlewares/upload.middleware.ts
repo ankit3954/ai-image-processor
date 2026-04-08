@@ -33,6 +33,6 @@ const upload = multer({
     fileFilter: function(req, file, cb) {
         checkFileType(file, cb)
     },
-}).single('myFile');
+});
 
 export default upload;
