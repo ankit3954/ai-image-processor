@@ -12,9 +12,28 @@ export const uploadImage = async (
         res.status(201).json({
             success: true,
             message: "File Uploaded.",
-            data: {image}
+            data: { image }
         });
     } catch (err) {
+        console.error(err);
         next(err);
+    }
+}
+
+export const transformImage = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+) => {
+    try {
+        const transformedImage = await imageService.transformImage(req, res);
+        res.status(201).json({
+            success: true,
+            message: "File Trasnformed.",
+            data: { transformedImage }
+        });
+    } catch (err) {
+        console.error(err)
+        next(err)
     }
 }

@@ -59,7 +59,7 @@ interface IDerivedImage {
   createdAt?: Date;
 }
 
-interface IImage {
+export interface IImage {
   userId: mongoose.Types.ObjectId;
 
   original: {
@@ -131,7 +131,7 @@ const imageSchema = new mongoose.Schema<IImage>(
     status: {
       type: String,
       enum: ["pending", "processing", "completed"],
-      default: "completed",
+      default: "pending",
     },
   },
   { timestamps: true }
