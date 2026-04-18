@@ -5,7 +5,6 @@ import { transformationEngine } from "../../utils/transformationEngine.utils.js"
 
 export const uploadImage = async (req: Request, res: Response) => {
     const file = req.file;
-    console.log(req)
     if (!file) {
         throw { status: 400, message: "No file uploaded" }
     }

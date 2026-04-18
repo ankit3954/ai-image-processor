@@ -1,6 +1,6 @@
 import 'dotenv/config'; 
 // dotenv.config()
-
+import cors from "cors";
 import express, { type Application } from "express"
 
 import connectDB from "./config/database.js";
@@ -8,6 +8,7 @@ import authRouter from "./modules/auth/auth.router.js";
 import imageRouter from "./modules/image/image.router.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 const app = express()
+app.use(cors())
 app.use(express.json());
 
 connectDB();
