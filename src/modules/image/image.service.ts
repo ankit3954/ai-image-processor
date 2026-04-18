@@ -64,3 +64,49 @@ export const transformImage = async (
 
 }
 
+
+export const getImage = async(
+    req: Request,
+    res: Response
+) => {
+    const imageId = req.params.id;
+    const userId = req.user?.userId;
+
+    const images = await Image.findOne({
+        _id: imageId,
+        userId: userId
+    } as any);
+
+    if(!images){
+        throw { status: 404, message: "No Image Found" }
+    }
+
+    return images;
+}
+
+export const getImages = async(
+    req: Request,
+    res: Response
+) => {
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const userId = req.user?.userId;
+
+
+    const images = await Image.find({
+        userId: userId
+    }as any)
+    .sort({createdAt: -1})
+    .skip(skip)
+    .limit(limit);
+    
+
+
+    if(!images){
+        throw { status: 404, message: "No Image Found" }
+    }
+
+    return images;
+}
+
