@@ -1,14 +1,26 @@
 import type { Request, Response } from "express";
+import crypto from "crypto";
+import path from "path";
 import Image from "./image.model.js";
 import { transformationEngine } from "../../utils/transformationEngine.utils.js";
 
 
+const getUniqueFileName = (originalName: string) => {
+    const randomSuffix = crypto.randomBytes(6).toString('hex');
+    const extension = path.extname(originalName);
+    const newFileName = `${randomSuffix}${extension}`;
+
+    return newFileName;
+}
 export const uploadImage = async (req: Request, res: Response) => {
     const file = req.file;
+    console.log(file)
     if (!file) {
         throw { status: 400, message: "No file uploaded" }
     }
 
+    const uniqueFileName = getUniqueFileName(file.originalname)
+    console.log(uniqueFileName)
     const image = await Image.create({
         userId: req.user.userId,
         original: {

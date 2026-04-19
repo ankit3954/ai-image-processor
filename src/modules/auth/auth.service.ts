@@ -50,7 +50,7 @@ export const login = async (
 
     const isPasswordCorrect = await bcyrpt.compare(data.password, user.password);
     if(!isPasswordCorrect){
-        throw { status: 409, message: "Invalid Credentials"};
+        throw { status: 401, message: "Invalid Credentials"};
     }
 
     const accessToken = generateAccessToken({
@@ -60,6 +60,8 @@ export const login = async (
 
     const {raw, hashed, expiresAt} = generateRefreshToken();
 
+    await RefreshToken.deleteMany({ userId: user._id });
+    
     await RefreshToken.create({
         userId: user._id,
         tokenHash: hashed,

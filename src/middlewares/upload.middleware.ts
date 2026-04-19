@@ -1,15 +1,17 @@
 import multer, { type Multer, type StorageEngine } from "multer";
 import path from "path";
 
-const storage: StorageEngine = multer.diskStorage({
-    destination: "./uploads/",
-    filename: function(req, file, cb) {
-        cb(
-            null,
-            file.fieldname + '-' + Date.now() + path.extname(file.originalname)
-        )
-    }
-})
+// const storage: StorageEngine = multer.diskStorage({
+//     destination: "./uploads/",
+//     filename: function(req, file, cb) {
+//         cb(
+//             null,
+//             file.fieldname + '-' + Date.now() + path.extname(file.originalname)
+//         )
+//     }
+// })
+
+const storage: StorageEngine = multer.memoryStorage()
 
 const MAX_SIZE: number = 1 * 1024 * 1024;  // 1MB in bytes
 
