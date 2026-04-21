@@ -3,6 +3,7 @@ import crypto from "crypto";
 import path from "path";
 import Image from "./image.model.js";
 import { transformationEngine } from "../../utils/transformationEngine.utils.js";
+import { createPublicUrl, uploadImageInR2 } from "../../config/s3Client.js";
 
 
 const getUniqueFileName = (originalName: string) => {
@@ -12,6 +13,7 @@ const getUniqueFileName = (originalName: string) => {
 
     return newFileName;
 }
+
 export const uploadImage = async (req: Request, res: Response) => {
     const file = req.file;
     console.log(file)
@@ -20,13 +22,19 @@ export const uploadImage = async (req: Request, res: Response) => {
     }
 
     const uniqueFileName = getUniqueFileName(file.originalname)
+    const buffer = file.buffer;
+    const mimeType = file.mimetype;
     console.log(uniqueFileName)
+
+    await uploadImageInR2(uniqueFileName, buffer, mimeType);
+    const publicUrl = createPublicUrl(uniqueFileName);
+
     const image = await Image.create({
         userId: req.user.userId,
         original: {
             name: file.originalname,
-            fileName: file.filename,
-            url: file.path,
+            fileName: uniqueFileName,
+            url: publicUrl,
             size: file.size,
             mimetype: file.mimetype,
         },
