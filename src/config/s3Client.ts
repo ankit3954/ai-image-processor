@@ -2,7 +2,7 @@ import {
     S3Client,
     PutObjectCommand,
     GetObjectCommand,
-    ListObjectsV2Command,
+    DeleteObjectCommand
 } from "@aws-sdk/client-s3";
 
 const s3 = new S3Client({
@@ -29,7 +29,7 @@ export const uploadImageInR2 = async (uniqueFileName: string, body: Buffer<Array
 }
 
 
-export const getImageFromR2 = async(uniqueFileName: string) => {
+export const getImageFromR2 = async (uniqueFileName: string) => {
     // Download a file
     const response = await s3.send(
         new GetObjectCommand({
@@ -38,10 +38,19 @@ export const getImageFromR2 = async(uniqueFileName: string) => {
         }),
     );
 
-    const content = await response.Body?.transformToString();
+    const content = await response.Body?.transformToByteArray();
+    return content;
     // console.log("Downloaded:", content);
 }
 
+export const deleteImageFromR2 = async(uniqueFileName: string) => {
+    await s3.send(
+        new DeleteObjectCommand({
+            Bucket: process.env.R2_BUCKET_NAME,
+            Key: uniqueFileName,
+        }),
+    );
+}
 
 export const createPublicUrl = (uniqueFileName: string) => {
     const publicUrl = process.env.R2_PUBLIC_URL + uniqueFileName;

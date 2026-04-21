@@ -3,7 +3,7 @@ import crypto from "crypto";
 import path from "path";
 import Image from "./image.model.js";
 import { transformationEngine } from "../../utils/transformationEngine.utils.js";
-import { createPublicUrl, uploadImageInR2 } from "../../config/s3Client.js";
+import { createPublicUrl, deleteImageFromR2, getImageFromR2, uploadImageInR2 } from "../../config/s3Client.js";
 
 
 const getUniqueFileName = (originalName: string) => {
@@ -16,35 +16,40 @@ const getUniqueFileName = (originalName: string) => {
 
 export const uploadImage = async (req: Request, res: Response) => {
     const file = req.file;
-    console.log(file)
     if (!file) {
         throw { status: 400, message: "No file uploaded" }
     }
 
     const uniqueFileName = getUniqueFileName(file.originalname)
-    const buffer = file.buffer;
-    const mimeType = file.mimetype;
+    const { buffer, mimetype } = file;
     console.log(uniqueFileName)
 
-    await uploadImageInR2(uniqueFileName, buffer, mimeType);
+    await uploadImageInR2(uniqueFileName, buffer, mimetype);
     const publicUrl = createPublicUrl(uniqueFileName);
 
-    const image = await Image.create({
-        userId: req.user.userId,
-        original: {
-            name: file.originalname,
-            fileName: uniqueFileName,
-            url: publicUrl,
-            size: file.size,
-            mimetype: file.mimetype,
-        },
-        derivedImages: [],
-    })
+    try {
+        const image = await Image.create({
+            userId: req.user.userId,
+            original: {
+                name: file.originalname,
+                fileName: uniqueFileName,
+                url: publicUrl,
+                size: file.size,
+                mimetype: file.mimetype,
+            },
+            derivedImages: [],
+        })
 
-    return {
-        id: image._id,
-        url: image.original.url
-    };
+        return {
+            id: image._id,
+            url: image.original.url
+        };
+    } catch (error) {
+        // We only catch this error so we can delete the orphaned cloud file
+        console.error("DB Save failed, rolling back R2 upload...");
+        await deleteImageFromR2(uniqueFileName);
+        throw { status: 500, message: "Failed to save image record." };
+    }
 
 }
 
@@ -59,32 +64,45 @@ export const transformImage = async (
     const image = await Image.findOne({
         _id: imageId,
         userId: userId
-    }as any)
+    } as any)
 
     if (!image) {
         throw { status: 400, message: "Image not found" }
     }
 
-    const originalImagePath = image.original.url;
+    const { fileName, mimetype } = image.original;
+    const originalImagePath = await getImageFromR2(fileName);
 
-    const { newDerivedFilePath, newFileName } = await transformationEngine(originalImagePath, transformations, imageId);
+    if (!originalImagePath) {
+        throw { status: 404, message: "Failed to save image record." };
+    }
 
-    image.derivedImages.push({
-        url: newDerivedFilePath,
-        fileName: newFileName,
-        transformations
-    });
+    const { buffer, newFileName } = await transformationEngine(originalImagePath, transformations, imageId);
+    await uploadImageInR2(newFileName, buffer, mimetype);
+    const publicUrl = createPublicUrl(newFileName);
 
-    await image.save()
+    try {
+        image.derivedImages.push({
+            url: publicUrl,
+            fileName: newFileName,
+            transformations
+        });
 
-    return {
-        url: newDerivedFilePath
+        await image.save()
+
+        return {
+            url: publicUrl
+        }
+    } catch (error) {
+        console.error("DB Save failed, rolling back R2 upload...");
+        await deleteImageFromR2(newFileName);
+        throw { status: 500, message: "Failed to save image record." };
     }
 
 }
 
 
-export const getImage = async(
+export const getImage = async (
     req: Request,
     res: Response
 ) => {
@@ -96,14 +114,14 @@ export const getImage = async(
         userId: userId
     } as any);
 
-    if(!images){
+    if (!images) {
         throw { status: 404, message: "No Image Found" }
     }
 
     return images;
 }
 
-export const getImages = async(
+export const getImages = async (
     req: Request,
     res: Response
 ) => {
@@ -115,14 +133,14 @@ export const getImages = async(
 
     const images = await Image.find({
         userId: userId
-    }as any)
-    .sort({createdAt: -1})
-    .skip(skip)
-    .limit(limit);
-    
+    } as any)
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit);
 
 
-    if(!images){
+
+    if (!images) {
         throw { status: 404, message: "No Image Found" }
     }
 

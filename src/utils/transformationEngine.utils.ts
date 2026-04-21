@@ -2,23 +2,19 @@ import sharp from "sharp";
 import path from "path";
 import crypto from "crypto";
 
-const getNewDerivedFilePath = (originalImageId: String, targetExtension: string) => {
+const getNewFileName = (originalImageId: String, targetExtension: string) => {
     // Generate a random string to prevent race conditions
     const randomSuffix = crypto.randomBytes(6).toString('hex');
     const timestamp = Date.now();
 
     // Result: "661cfb3b...-1713084000000-a1b2c3d4.webp"
     const newFileName = `${originalImageId}-${timestamp}-${randomSuffix}${targetExtension}`;
-    // Assuming your uploads folder is at the root of your project
-    const uploadsDir = path.join(process.cwd(), 'uploads'); // Adjust based on your folder structure
-    const newDerivedFilePath = path.join(uploadsDir, newFileName);
     return {
-        newDerivedFilePath,
         newFileName
     };
 }
 
-export const transformationEngine = async(originalImagePath: string, transformations: any, imageId: string) => {
+export const transformationEngine = async(originalImagePath: Uint8Array, transformations: any, imageId: string) => {
     let imagePipeline = sharp(originalImagePath);
 
 
@@ -67,11 +63,11 @@ export const transformationEngine = async(originalImagePath: string, transformat
         }
     }
 
-    const {newDerivedFilePath, newFileName} = getNewDerivedFilePath(imageId, '.jpeg');
-    await imagePipeline.toFile(newDerivedFilePath);
+    const {newFileName} = getNewFileName(imageId, '.jpeg');
+    const buffer = await imagePipeline.toBuffer();
 
     return {
-        newDerivedFilePath,
+        buffer,
         newFileName
     }
 }
