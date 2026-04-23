@@ -70,6 +70,21 @@ export const transformImage = async (
         throw { status: 400, message: "Image not found" }
     }
 
+    const transformationString = JSON.stringify(transformations);
+    const fingerPrint = crypto.createHash('md5').update(transformationString).digest('hex');
+
+    const existingDerivedImage = image.derivedImages.find(
+        (derived) => derived.fingerPrint === fingerPrint
+    )
+
+    if(existingDerivedImage){
+         console.log("Cache hit! Returning existing R2 URL.");
+        // Stop execution entirely and just return the existing URL
+        return{
+            url: existingDerivedImage.url
+        }
+    }
+
     const { fileName, mimetype } = image.original;
     const originalImagePath = await getImageFromR2(fileName);
 
@@ -85,7 +100,8 @@ export const transformImage = async (
         image.derivedImages.push({
             url: publicUrl,
             fileName: newFileName,
-            transformations
+            transformations,
+            fingerPrint
         });
 
         await image.save()

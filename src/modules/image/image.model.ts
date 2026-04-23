@@ -10,6 +10,7 @@ interface IDerivedImage {
   fileName: string;
   transformations: ITransformation[];
   createdAt?: Date;
+  fingerPrint: string;
 }
 
 export interface IImage {
@@ -78,6 +79,11 @@ const imageSchema = new mongoose.Schema<IImage>(
           type: Date,
           default: Date.now,
         },
+
+        fingerPrint: {
+          type: String,
+          required: true
+        }
       },
     ],
 
