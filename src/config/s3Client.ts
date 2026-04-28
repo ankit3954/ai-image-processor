@@ -53,7 +53,7 @@ export const deleteImageFromR2 = async(uniqueFileName: string) => {
 }
 
 export const createPublicUrl = (uniqueFileName: string) => {
-    const publicUrl = process.env.R2_PUBLIC_URL + uniqueFileName;
+    const publicUrl = process.env.R2_PUBLIC_URL  + uniqueFileName;
     return publicUrl;
 }
 
