@@ -26,17 +26,27 @@ export const transformImage = async (
     next: NextFunction
 ): Promise<void> => {
     try {
-        const transformedImage = await imageService.transformImage(req, res);
-        res.status(201).json({
-            success: true,
-            message: "File Trasnformed.",
-            data: { transformedImage }
-        });
+        const result = await imageService.transformImage(req, res);
+        
+        if (result.status === "completed") {
+            res.status(200).json({
+                success: true,
+                message: "Image fetched from cache.",
+                data: result
+            });
+        } else {
+            res.status(202).json({
+                success: true,
+                message: "Image transformation accepted and is processing.",
+                data: result
+            });
+        }
     } catch (err) {
         console.error(err)
         next(err)
     }
 }
+
 
 export const getImage = async(
     req: Request,

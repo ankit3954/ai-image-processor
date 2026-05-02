@@ -1,7 +1,7 @@
-import amqp, { type Channel, type Connection } from "amqplib"
+import amqp, { type Channel, type ChannelModel, type Connection } from "amqplib"
 
 let channel: Channel | null = null;
-let connection: Connection | null = null;
+let connection: ChannelModel | null = null;
 
 export const connectQueue = async() => {
     try {
@@ -22,7 +22,7 @@ export const connectQueue = async() => {
         const queueName = 'image_processing_tasks';
 
         await channel.assertQueue(queueName, { durable: true });
-        console.log(`📦 Queue Ready: ${queueName}`);
+        console.log(`Queue Ready: ${queueName}`);
 
         return channel
 
@@ -38,4 +38,6 @@ export const getChannel = (): Channel => {
     }
     return channel;
 };
+
+
 

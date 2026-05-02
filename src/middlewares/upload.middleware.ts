@@ -13,7 +13,7 @@ import path from "path";
 
 const storage: StorageEngine = multer.memoryStorage()
 
-const MAX_SIZE: number = 1 * 1024 * 1024;  // 1MB in bytes
+const MAX_SIZE: number = 2 * 1024 * 1024;  // 2MB in bytes
 
 const checkFileType = (file: Express.Multer.File, cb: multer.FileFilterCallback) => {
     const filetypes = /jpeg|jpg|png/;

@@ -4,6 +4,7 @@ import path from "path";
 import Image from "./image.model.js";
 import { transformationEngine } from "../../utils/transformationEngine.utils.js";
 import { createPublicUrl, deleteImageFromR2, getImageFromR2, uploadImageInR2 } from "../../config/s3Client.js";
+import { getChannel } from "../../config/rabbitmq.js";
 
 
 const getUniqueFileName = (originalName: string) => {
@@ -81,39 +82,65 @@ export const transformImage = async (
          console.log("Cache hit! Returning existing R2 URL.");
         // Stop execution entirely and just return the existing URL
         return{
+           status: "completed", 
             url: existingDerivedImage.url
         }
     }
 
-    const { fileName, mimetype } = image.original;
-    const originalImagePath = await getImageFromR2(fileName);
+    // const { fileName, mimetype } = image.original;
 
-    if (!originalImagePath) {
-        throw { status: 404, message: "Failed to save image record." };
-    }
+    
+    const taskPayLoad = {
+        originalFileName: image.original.fileName,
+        mimetype: image.original.mimetype,
+        transformations,
+        imageId,
+        userId,
+        fingerPrint
+    };
 
-    const { buffer, newFileName } = await transformationEngine(originalImagePath, transformations, imageId);
-    await uploadImageInR2(newFileName, buffer, mimetype);
-    const publicUrl = createPublicUrl(newFileName);
 
-    try {
-        image.derivedImages.push({
-            url: publicUrl,
-            fileName: newFileName,
-            transformations,
-            fingerPrint
-        });
+    const channel = getChannel();
+    const queueName = "image_processing_tasks";
 
-        await image.save()
+    channel.sendToQueue(
+        queueName, 
+        Buffer.from(JSON.stringify(taskPayLoad))
+    );
 
-        return {
-            url: publicUrl
-        }
-    } catch (error) {
-        console.error("DB Save failed, rolling back R2 upload...");
-        await deleteImageFromR2(newFileName);
-        throw { status: 500, message: "Failed to save image record." };
-    }
+    return {
+        status: "pending",
+        jobId: fingerPrint
+    };
+    
+    // const originalImagePath = await getImageFromR2(fileName);
+
+    // if (!originalImagePath) {
+    //     throw { status: 404, message: "Failed to save image record." };
+    // }
+
+    // const { buffer, newFileName } = await transformationEngine(originalImagePath, transformations, imageId);
+    // await uploadImageInR2(newFileName, buffer, mimetype);
+    // const publicUrl = createPublicUrl(newFileName);
+
+    // try {
+    //     image.derivedImages.push({
+    //         url: publicUrl,
+    //         fileName: newFileName,
+    //         transformations,
+    //         fingerPrint
+    //     });
+
+    //     await image.save()
+
+    //     return {
+    //         url: publicUrl
+    //     }
+    // } catch (error) {
+    //     console.error("DB Save failed, rolling back R2 upload...");
+    //     await deleteImageFromR2(newFileName);
+    //     throw { status: 500, message: "Failed to save image record." };
+    // }
 
 }
 
