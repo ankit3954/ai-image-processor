@@ -2,8 +2,7 @@ import type { Request, Response } from "express";
 import crypto from "crypto";
 import path from "path";
 import Image from "./image.model.js";
-import { transformationEngine } from "../../utils/transformationEngine.utils.js";
-import { createPublicUrl, deleteImageFromR2, getImageFromR2, uploadImageInR2 } from "../../config/s3Client.js";
+import { createPublicUrl, deleteImageFromR2, uploadImageInR2 } from "../../config/s3Client.js";
 import { getChannel } from "../../config/rabbitmq.js";
 
 
@@ -21,6 +20,11 @@ export const uploadImage = async (req: Request, res: Response) => {
         throw { status: 400, message: "No file uploaded" }
     }
 
+    const user = req.user;
+    if(!user){
+        throw { status: 401, message: "Invalid User"}
+    }
+
     const uniqueFileName = getUniqueFileName(file.originalname)
     const { buffer, mimetype } = file;
     console.log(uniqueFileName)
@@ -30,7 +34,7 @@ export const uploadImage = async (req: Request, res: Response) => {
 
     try {
         const image = await Image.create({
-            userId: req.user.userId,
+            userId: user.userId,
             original: {
                 name: file.originalname,
                 fileName: uniqueFileName,
@@ -46,7 +50,6 @@ export const uploadImage = async (req: Request, res: Response) => {
             url: image.original.url
         };
     } catch (error) {
-        // We only catch this error so we can delete the orphaned cloud file
         console.error("DB Save failed, rolling back R2 upload...");
         await deleteImageFromR2(uniqueFileName);
         throw { status: 500, message: "Failed to save image record." };
@@ -80,14 +83,11 @@ export const transformImage = async (
 
     if(existingDerivedImage){
          console.log("Cache hit! Returning existing R2 URL.");
-        // Stop execution entirely and just return the existing URL
         return{
            status: "completed", 
             url: existingDerivedImage.url
         }
     }
-
-    // const { fileName, mimetype } = image.original;
 
     
     const taskPayLoad = {
@@ -112,35 +112,6 @@ export const transformImage = async (
         status: "pending",
         jobId: fingerPrint
     };
-    
-    // const originalImagePath = await getImageFromR2(fileName);
-
-    // if (!originalImagePath) {
-    //     throw { status: 404, message: "Failed to save image record." };
-    // }
-
-    // const { buffer, newFileName } = await transformationEngine(originalImagePath, transformations, imageId);
-    // await uploadImageInR2(newFileName, buffer, mimetype);
-    // const publicUrl = createPublicUrl(newFileName);
-
-    // try {
-    //     image.derivedImages.push({
-    //         url: publicUrl,
-    //         fileName: newFileName,
-    //         transformations,
-    //         fingerPrint
-    //     });
-
-    //     await image.save()
-
-    //     return {
-    //         url: publicUrl
-    //     }
-    // } catch (error) {
-    //     console.error("DB Save failed, rolling back R2 upload...");
-    //     await deleteImageFromR2(newFileName);
-    //     throw { status: 500, message: "Failed to save image record." };
-    // }
 
 }
 
