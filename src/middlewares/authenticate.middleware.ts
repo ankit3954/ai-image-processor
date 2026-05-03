@@ -15,7 +15,7 @@ export const authenticate = async(
 
         const parts = authHeader.split(" ");
         if(parts.length !== 2 || parts[0] !== "Bearer"){
-             throw {status: 401, message: "Invaled token format"}
+             throw {status: 401, message: "Invalid token format"}
         }
 
         const token = parts[1] as string;

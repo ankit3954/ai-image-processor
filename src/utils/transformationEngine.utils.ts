@@ -22,12 +22,6 @@ export const transformationEngine = async (
     let imagePipeline = sharp(originalImagePath);
     const metadata = await imagePipeline.metadata();
 
-    console.log("📊 DEBUG: Original Image Dimensions:", {
-        width: metadata.width,
-        height: metadata.height,
-    });
-    console.log("📊 DEBUG: Requested Crop Dimensions:", transformations); // Assuming your payload has a 'crop' object
-
     for (const task of transformations) {
         switch (task.type) {
             case "resize":

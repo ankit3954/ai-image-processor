@@ -89,7 +89,9 @@ export const transformImage = async (
         }
     }
 
-    
+    image.status = 'pending';
+    await image.save();
+
     const taskPayLoad = {
         originalFileName: image.original.fileName,
         mimetype: image.original.mimetype,
