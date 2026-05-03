@@ -9,7 +9,7 @@
 
 ---
 
-**[Postman API Documentation](https://documenter.getpostman.com/view/40033311/2sBXqKp16R)** • **[Project URL](https://image-processor-api-s6i2.onrender.com)**
+**[Postman API Documentation](https://documenter.getpostman.com/view/40033311/2sBXqKp16R)** • **[Project URL](https://roadmap.sh/projects/image-processing-service)**
 
 ---
   
