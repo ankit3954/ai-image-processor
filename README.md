@@ -7,7 +7,12 @@
   [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
   [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/ankit3954/image-processor-optiqueue/pulls)
 
-  **[Postman API Documentation]**(`https://documenter.getpostman.com/view/40033311/2sBXqKp16R`) • **[Live API Status]**(`https://image-processor-api-s6i2.onrender.com`)
+---
+
+**[Postman API Documentation](https://documenter.getpostman.com/view/40033311/2sBXqKp16R)** • **[Project URL](https://image-processor-api-s6i2.onrender.com)**
+
+---
+  
 </div>
 
 ---
