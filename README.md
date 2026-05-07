@@ -67,9 +67,9 @@ For detailed payloads and examples, please view the **[Interactive Postman Docum
 
 | Method | Endpoint | Description | Auth Required |
 | :--- | :--- | :--- | :--- |
-| `POST` | `/image/:imageId/transform` | Submits an image for resizing, cropping, or format conversion. Returns a `jobId`. | No |
-| `GET` | `/image/uploads` | Upload image to Cloudflare R2. | No |
-| `GET` | `/image/:imageId` | Retrieves the final processed image URL from the database. | No |
+| `POST` | `/image/:imageId/transform` | Submits an image for resizing, cropping, or format conversion. Returns a `jobId`. | Yes |
+| `GET` | `/image/uploads` | Upload image to Cloudflare R2. | Yes |
+| `GET` | `/image/:imageId` | Retrieves the final processed image URL from the database. | Yes |
 
 ---
 
